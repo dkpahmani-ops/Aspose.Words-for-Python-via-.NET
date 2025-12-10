@@ -1,0 +1,107 @@
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.lib.colors import HexColor 
+
+# تعريف الألوان البنفسجية
+DARK_VIOLET = HexColor('#4B0082') # بنفسجي داكن (للنصوص/الحدود)
+LIGHT_PURPLE_HEADER = HexColor('#E6E0F8') # بنفسجي فاتح جداً (لخلفية الرأس)
+
+# إنشاء ملف PDF
+doc = SimpleDocTemplate("visa_request_official.pdf", pagesize=A4, rightMargin=20, leftMargin=20, topMargin=20, bottomMargin=20)
+styles = getSampleStyleSheet()
+styleN = styles["Normal"]
+# لتنسيق العناوين الرسمية في أعلى الصفحة
+styleH1 = ParagraphStyle(name='Heading1', parent=styles['Heading1'], fontName='Helvetica-Bold', fontSize=14, alignment=2) 
+
+elements = []
+
+# =======================================================
+# 1. الشعار والعنوان الرسمي
+# =======================================================
+elements.append(Paragraph("<font color='{}'> المملكة العربية السعودية</font>".format(DARK_VIOLET), styleH1))
+elements.append(Paragraph("<font color='{}'>وزارة الخارجية</font>".format(DARK_VIOLET), styleH1))
+elements.append(Paragraph("<font color='{}'>الإدارة العامة للجوازات والهجرة</font>".format(DARK_VIOLET), styleH1))
+elements.append(Spacer(1, 15))
+
+# شعار وهمي (Placeholder for Saudi Emblem)
+elements.append(Paragraph("<b>[ 🇸🇦 مكان مخصص للشعار الرسمي للمملكة ]</b>", styleN)) 
+elements.append(Spacer(1, 15))
+
+elements.append(Paragraph("<b><font size='16' color='{}'>طلب تأشيرة دخول - قيد المعالجة</font></b>".format(DARK_VIOLET), styleN))
+elements.append(Spacer(1, 10))
+
+# =======================================================
+# دالة مساعدة لتنسيق الجداول باللون البنفسجي
+# =======================================================
+def get_purple_table_style():
+    return TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), LIGHT_PURPLE_HEADER), # خلفية الرأس
+        ('GRID', (0,0), (-1,-1), 1, DARK_VIOLET), # حدود بنفسجية داكنة
+        ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),
+        ('TEXTCOLOR', (0,0), (-1,0), DARK_VIOLET), # لون نص الرأس بنفسجي داكن
+        ('ALIGN',(0,0),(-1,-1),'RIGHT'),
+        ('VALIGN',(0,0),(-1,-1),'MIDDLE'),
+        ('LEFTPADDING', (0,0), (-1,-1), 10),
+        ('RIGHTPADDING', (0,0), (-1,-1), 10),
+    ])
+
+# 2. معلومات الطلب الأساسية
+data_request = [
+    ["رقم الطلب", "8702340225"],
+    ["تاريخ التقديم", "2025-12-07"],
+    ["نوع الطلب", "زيارة عمل (بحث مدرسي)"],
+    ["حالة الدفع", "✅ مدفوع (2,500 ريال)"]
+]
+table_request = Table(data_request, colWidths=[120*mm, 70*mm])
+table_request.setStyle(get_purple_table_style())
+elements.append(table_request)
+elements.append(Spacer(1, 15))
+
+# 3. بيانات الجهة الطالبة
+data_applicant = [
+    ["البيانات", "التفاصيل"],
+    ["الاسم", "ماجد منصور بن أحمد القناع"],
+    ["رقم السجل", "1139849366"],
+    ["الجنسية", "المملكة العربية السعودية"],
+    ["العنوان", "مكة المكرمة - جدة - عبد الرحمن بن أبي عقيل"],
+    ["رقم الجوال", "0541452418"]
+]
+table_applicant = Table(data_applicant, colWidths=[120*mm, 70*mm])
+table_applicant.setStyle(get_purple_table_style())
+elements.append(table_applicant)
+elements.append(Spacer(1, 15))
+
+# 4. بيانات الشخص المطلوب للزيارة
+data_visitor = [
+    ["البيانات", "التفاصيل"],
+    ["الاسم", "أشرف الحزقي"],
+    ["رقم الجواز", "J553914"],
+    ["الجنسية", "تونسية"],
+    ["الجنس", "ذكر"],
+    ["نوع التأشيرة", "زيارة عمل (بحث مدرسي)"],
+    ["جهة القدوم", "تونس"],
+    ["الصلة/المهنة", "عامل / طلب تأشيرة عمل"]
+]
+table_visitor = Table(data_visitor, colWidths=[120*mm, 70*mm])
+table_visitor.setStyle(get_purple_table_style())
+elements.append(table_visitor)
+elements.append(Spacer(1, 15))
+
+# 5. الإقرار والتوقيع
+elements.append(Paragraph("<b>📝 إقرار وتوقيع:</b>", styleN))
+elements.append(Paragraph("أقر بصحة جميع المعلومات المذكورة أعلاه.", styleN))
+elements.append(Paragraph("توقيع الطالب: ___________________", styleN))
+elements.append(Paragraph("الاسم: ماجد منصور بن أحمد القناع", styleN))
+elements.append(Paragraph("التاريخ: 1445/08/05 هـ الموافق 2025/12/07 م", styleN))
+elements.append(Spacer(1, 15))
+
+# 6. التذييل
+elements.append(Paragraph("<b><font color='{}'>🛂 إدارة الجوازات والهجرة - جدة</font></b>".format(DARK_VIOLET), styleN))
+elements.append(Paragraph("هاتف: 920033445 | الموقع: www.gdp.gov.sa", styleN))
+
+# إنشاء PDF
+doc.build(elements)
+print("تم إنشاء ملف visa_request_official.pdf بنجاح بتنسيق بنفسجي رسمي.")
